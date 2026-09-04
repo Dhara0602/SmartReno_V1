@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartReno App | AI Room Renovation Planner</title>
+  <meta name="description" content="Upload your room photo, choose your design theme, get AI recommendations and visualize furniture in 3D.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/app.css">
+
+  <!-- CDN Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header" role="banner">
+    <a href="/" class="app-logo" aria-label="SmartReno — back to home">SmartReno</a>
+    <div class="progress-bar-track" role="progressbar" aria-label="Renovation planning progress" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
+      <div class="progress-bar-fill" id="progress-fill" style="width:20%"></div>
+    </div>
+    <span class="stage-label" id="stage-label" aria-live="polite">1 / 5 — Capture</span>
+  </header>
+
+  <!-- Toast Container -->
+  <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STAGE 1 — Capture
+  ═══════════════════════════════════════════════════════════════ -->
+  <main class="app-main">
+    <section class="stage active" id="stage-1" aria-labelledby="s1-title">
+      <div class="stage-inner">
+        <header class="stage-header">
+          <p class="stage-num">Step 1 of 5</p>
+          <h1 class="stage-title" id="s1-title">Capture your room</h1>
+          <p class="stage-subtitle">Take or upload a clear photo of the room you want to renovate. Works best with good natural light.</p>
+        </header>
+
+        <div class="capture-area">
+          <div id="camera-container" style="width:100%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         STAGE 2 — Preferences
+    ═══════════════════════════════════════════════════════════════ -->
+    <section class="stage" id="stage-2" aria-labelledby="s2-title">
+      <div class="stage-inner">
+        <header class="stage-header">
+          <p class="stage-num">Step 2 of 5</p>
+          <h1 class="stage-title" id="s2-title">Choose your style</h1>
+          <p class="stage-subtitle">Select a design theme and budget — the AI will tailor its recommendations to your choices.</p>
+        </header>
+
+        <!-- Theme Selection -->
+        <div class="prefs-section">
+          <p class="prefs-label" id="theme-label">Design theme</p>
+          <div class="theme-grid" role="radiogroup" aria-labelledby="theme-label">
+            <button class="theme-card" data-theme="bohemian" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-icon" aria-hidden="true">🌿</span>
+              <span class="theme-name">Bohemian</span>
+            </button>
+            <button class="theme-card" data-theme="industrial" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-icon" aria-hidden="true">⚙️</span>
+              <span class="theme-name">Industrial</span>
+            </button>
+            <button class="theme-card" data-theme="minimal" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-icon" aria-hidden="true">◻</span>
+              <span class="theme-name">Minimal</span>
+            </button>
+            <button class="theme-card" data-theme="contemporary" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-icon" aria-hidden="true">✦</span>
+              <span class="theme-name">Contemporary</span>
+            </button>
+            <button class="theme-card" data-theme="scandinavian" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-icon" aria-hidden="true">🏔</span>
+              <span class="theme-name">Scandinavian</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Budget Selection -->
+        <div class="prefs-section">
+          <p class="prefs-label" id="budget-label">Budget tier</p>
+          <div class="budget-grid" role="radiogroup" aria-labelledby="budget-label">
+            <button class="budget-card" data-budget="economy" role="radio" aria-checked="false" tabindex="0">
+              <div class="budget-tier" aria-hidden="true">💚</div>
+              <div class="budget-name">Economy</div>
+              <div class="budget-range">Under £1,500</div>
+            </button>
+            <button class="budget-card" data-budget="moderate" role="radio" aria-checked="false" tabindex="0">
+              <div class="budget-tier" aria-hidden="true">💛</div>
+              <div class="budget-name">Moderate</div>
+              <div class="budget-range">£1,500 – £3,000</div>
+            </button>
+            <button class="budget-card" data-budget="premium" role="radio" aria-checked="false" tabindex="0">
+              <div class="budget-tier" aria-hidden="true">💜</div>
+              <div class="budget-name">Premium</div>
+              <div class="budget-range">Above £3,000</div>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button class="btn btn-ghost" id="btn-back-capture">← Back</button>
+          <button class="btn btn-primary btn-full" id="btn-analyse" disabled
+                  aria-label="Analyze my room with AI">
+            🤖 Analyze My Room
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         STAGE 3 — Analysis
+    ═══════════════════════════════════════════════════════════════ -->
+    <section class="stage" id="stage-3" aria-labelledby="s3-title">
+      <div class="stage-inner">
+        <header class="stage-header">
+          <p class="stage-num">Step 3 of 5</p>
+          <h1 class="stage-title" id="s3-title">AI Analysis</h1>
+          <p class="stage-subtitle">Claude is analyzing your room and generating personalized recommendations.</p>
+        </header>
+
+        <!-- Loading State -->
+        <div class="analysis-loading" id="analysis-loading" role="status" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="loading-message" id="loading-message">Analyzing room dimensions…</p>
+        </div>
+
+        <!-- Results -->
+        <div class="analysis-results" id="analysis-results">
+          <!-- Color Palette -->
+          <div class="result-card card">
+            <p class="result-card-title">🎨 Colour Palette</p>
+            <div class="color-swatches" id="color-swatches" aria-label="Recommended colour swatches"></div>
+          </div>
+
+          <!-- Lighting -->
+          <div class="result-card card">
+            <p class="result-card-title">💡 Lighting Recommendations</p>
+            <div class="result-list" id="lighting-list" role="list"></div>
+          </div>
+
+          <!-- Flooring -->
+          <div class="result-card card">
+            <p class="result-card-title">🪵 Flooring Options</p>
+            <div class="result-list" id="flooring-list" role="list"></div>
+          </div>
+
+          <!-- Furniture -->
+          <div class="result-card card">
+            <p class="result-card-title">🛋 Furniture Suggestions</p>
+            <div class="furniture-list" id="furniture-list" role="list"></div>
+          </div>
+
+          <!-- Style Notes -->
+          <div class="result-card card">
+            <p class="result-card-title">📝 Design Brief</p>
+            <p class="style-notes" id="style-notes"></p>
+          </div>
+
+          <div class="analysis-cta">
+            <button class="btn btn-primary btn-full" id="btn-go-visualize">
+              🏠 Visualize in 3D →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         STAGE 4 — 3D Visualizer
+    ═══════════════════════════════════════════════════════════════ -->
+    <section class="stage" id="stage-4" aria-labelledby="s4-title">
+      <div class="stage-inner" style="max-width:100%">
+        <header class="stage-header">
+          <p class="stage-num">Step 4 of 5</p>
+          <h1 class="stage-title" id="s4-title">Visualize in 3D</h1>
+          <p class="stage-subtitle">Click furniture cards to place them. Drag to orbit. Keys: R=rotate, +/−=scale, D=delete.</p>
+        </header>
+
+        <div class="visualizer-layout">
+          <!-- 3D Canvas -->
+          <div class="canvas-wrapper">
+            <canvas id="three-canvas" aria-label="3D room visualizer"></canvas>
+            <div class="ar-badge" aria-live="polite">● Loading…</div>
+            <div class="canvas-overlay-controls" role="group" aria-label="3D view controls">
+              <button class="canvas-ctrl-btn" id="ctrl-rotate" title="Rotate selected item 15°">↻ Rotate</button>
+              <button class="canvas-ctrl-btn" id="ctrl-scale-up" title="Scale up selected item">＋ Scale</button>
+              <button class="canvas-ctrl-btn" id="ctrl-scale-dn" title="Scale down selected item">－ Scale</button>
+              <button class="canvas-ctrl-btn" id="ctrl-delete" title="Delete selected item">✕ Delete</button>
+            </div>
+          </div>
+
+          <!-- Side Panel -->
+          <aside aria-label="Furniture panel">
+            <div id="furniture-panel" class="furniture-panel">
+              <p style="color:var(--text-secondary);font-size:0.85rem">Loading furniture…</p>
+            </div>
+            <div class="selected-item-controls" id="selected-item-controls" role="status" aria-live="polite">
+              <p class="sic-title">Selected</p>
+              <p class="sic-name" id="selected-item-name">—</p>
+              <div class="sic-buttons">
+                <button class="btn btn-ghost btn-sm" onclick="ARVisualizer.rotateSelected(15)">↻ Rotate</button>
+                <button class="btn btn-ghost btn-sm" onclick="ARVisualizer.scaleSelected(1.15)">＋</button>
+                <button class="btn btn-ghost btn-sm" onclick="ARVisualizer.scaleSelected(0.85)">－</button>
+                <button class="btn btn-danger btn-sm"  onclick="ARVisualizer.deleteSelected()">✕ Delete</button>
+              </div>
+            </div>
+            <div class="visualizer-cta">
+              <button class="btn btn-primary btn-full" id="btn-go-budget">
+                💷 Go to Budget →
+              </button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         STAGE 5 — Budget
+    ═══════════════════════════════════════════════════════════════ -->
+    <section class="stage" id="stage-5" aria-labelledby="s5-title">
+      <div class="stage-inner">
+        <header class="stage-header">
+          <p class="stage-num">Step 5 of 5</p>
+          <h1 class="stage-title" id="s5-title">Budget Breakdown</h1>
+          <p class="stage-subtitle">Your complete project cost estimate, ready to share with contractors.</p>
+        </header>
+
+        <!-- Summary Card -->
+        <div class="budget-summary-card card">
+          <div class="budget-total-row">
+            <span class="budget-total-label">Project Total</span>
+            <span class="budget-status-row" style="display:flex;align-items:center;gap:12px">
+              <span class="badge badge-info" id="budget-status-badge">Calculating…</span>
+              <span class="budget-total-value" id="budget-total-value">£—</span>
+            </span>
+          </div>
+          <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em">Theme</div>
+              <div style="font-size:0.9rem;font-weight:600;color:var(--text-primary);margin-top:3px" id="budget-theme">—</div>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em">Budget Tier</div>
+              <div style="font-size:0.9rem;font-weight:600;color:var(--text-primary);margin-top:3px" id="budget-tier">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Table -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="budget-table" id="budget-table" aria-label="Cost breakdown table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Description</th>
+                <th style="text-align:right">Est. Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="3" style="text-align:center;padding:24px;color:var(--text-secondary)">Calculating…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations-card card">
+          <p class="result-card-title">📌 Key Recommendations</p>
+          <div class="rec-grid" id="rec-grid"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="budget-actions">
+          <button class="btn btn-primary" id="btn-download-pdf">
+            ⬇ Download PDF Report
+          </button>
+          <button class="btn btn-secondary" id="btn-start-over">
+            ↩ Start Over
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Reset Confirmation Modal -->
+  <div class="modal-overlay hidden" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <h2 class="modal-title" id="modal-title">Start over?</h2>
+      <p class="modal-body">This will clear your room photo, selections, and analysis. You'll return to step 1.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-reset">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-reset">Yes, start over</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Modules (order matters) -->
+  <script src="/js/camera.js"></script>
+  <script src="/js/claude_service.js"></script>
+  <script src="/js/ar_visualizer.js"></script>
+  <script src="/js/budget_service.js"></script>
+  <script src="/js/pdf_export.js"></script>
+  <script src="/js/app.js"></script>
+
+</body>
+</html>

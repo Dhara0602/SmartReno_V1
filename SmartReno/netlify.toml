@@ -1,0 +1,37 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/app"
+  to   = "/app.html"
+  status = 200
+
+[[redirects]]
+  from = "/404"
+  to   = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options              = "DENY"
+    X-Content-Type-Options       = "nosniff"
+    X-XSS-Protection             = "1; mode=block"
+    Referrer-Policy              = "strict-origin-when-cross-origin"
+    Permissions-Policy           = "camera=self, microphone=()"
+    Strict-Transport-Security    = "max-age=31536000; includeSubDomains"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

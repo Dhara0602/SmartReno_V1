@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+**/.temp/
+
+# Editor / tooling
+.claude/settings.local.json
+
+# Build output
+dist/
+.netlify/

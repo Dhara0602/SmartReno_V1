@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#0a0e1a"/>
+  <!-- House outline -->
+  <path d="M16 5 L28 15 L28 27 L4 27 L4 15 Z" stroke="url(#grad)" stroke-width="2" fill="none" stroke-linejoin="round"/>
+  <!-- Roof ridge -->
+  <path d="M16 5 L16 5" stroke="url(#grad)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Door -->
+  <rect x="12.5" y="19" width="7" height="8" rx="1" stroke="#7c3aed" stroke-width="1.5" fill="none"/>
+  <!-- Window -->
+  <rect x="19" y="16" width="5" height="4" rx="0.5" stroke="#00d4ff" stroke-width="1" fill="rgba(0,212,255,0.15)"/>
+  <!-- AI sparkle -->
+  <path d="M8 14 L9 12 L10 14 L12 15 L10 16 L9 18 L8 16 L6 15 Z" fill="#00d4ff" opacity="0.9"/>
+  <defs>
+    <linearGradient id="grad" x1="4" y1="5" x2="28" y2="27" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+</svg>
